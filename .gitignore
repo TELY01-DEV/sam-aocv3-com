@@ -1,0 +1,35 @@
+*.tar.gz
+*.zip
+*.tar
+
+# Ignore upload directories and large files
+**/uploads/ambulance_images/**
+**/public/uploads/**
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.tiff
+
+# Ignore node_modules
+node_modules/
+**/node_modules/
+
+# Ignore logs
+*.log
+logs/
+**/logs/
+
+# Ignore database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Ignore environment files
+.env
+.env.local
+.env.production
+# Sensitive files - do not commit
+API-SERVER/backend/config/aoc_v2-1.json
+*.json

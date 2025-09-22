@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="A fully featured admin theme which can be used to build CRM, CMS, etc.">
+        <meta name="author" content="Coderthemes">
+        <link rel="shortcut icon" href="images/logo.png">
+        <title><%= title %></title>
+        <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+        <link href="css/icons.css" rel="stylesheet" type="text/css" />
+        <link href="css/style.css" rel="stylesheet" type="text/css" />
+        <script src="js/modernizr.min.js"></script>
+
+    </head>
+    <body>
+
+        <div class="account-pages"></div>
+        <div class="clearfix"></div>
+        <div class="wrapper-page">
+            <div class="card-box">
+                <div>
+                    <center><img src="" class="img-responsive logo" style="width: 30%;"></center>
+                </div>
+                <div class="panel-heading">
+                    <h4 class="text-center"> Sign In to <strong class="text-custom"><%= title %></strong></h4>
+                </div>
+                <div class="alert alert-danger" id="alert" style="display:none;" ></div>
+                <div class="p-20">
+                    <form class="form-horizontal m-t-20" method="post"  id="Login_form">
+
+                        <div class="form-group ">
+                            <div class="col-12">
+                                <input class="form-control" type="text"  placeholder="Email"  id="Email" name="Email" >
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="col-12">
+                                <input class="form-control" type="password"  placeholder="Password" id="Password" name="Password" >
+                            </div>
+                        </div>
+
+                        <!-- <div class="form-group ">
+                            <div class="col-12">
+                                <div class="checkbox checkbox-primary">
+                                    <input id="checkbox-signup" type="checkbox">
+                                    <label for="checkbox-signup">
+                                        Remember me
+                                    </label>
+                                </div>
+
+                            </div>
+                        </div> -->
+
+                        <div class="form-group text-center m-t-40">
+                            <div class="col-12">
+                                <button class="btn btn-pink btn-block text-uppercase waves-effect waves-light"
+                                        type="submit">Log In
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- <div class="form-group m-t-30 m-b-0">
+                            <div class="col-12">
+                                <a href="page-recoverpw.html" class="text-dark"><i class="fa fa-lock m-r-5"></i> Forgot
+                                    your password?</a>
+                            </div>
+                        </div> -->
+                    </form>
+
+                </div>
+            </div>
+           <!--  <div class="row">
+                <div class="col-sm-12 text-center">
+                    <p>Don't have an account? <a href="page-register.html" class="text-primary m-l-5"><b>Sign Up</b></a>
+                    </p>
+
+                </div>
+            </div> -->
+
+        </div>
+        <script>
+            var resizefunc = [];
+        </script>
+        <!-- jQuery  -->
+        <script src="js/jquery.min.js"></script>
+        <script src="js/popper.min.js"></script><!-- Popper for Bootstrap -->
+        <script src="js/bootstrap.min.js"></script>
+        <script src="js/detect.js"></script>
+        <script src="js/fastclick.js"></script>
+        <script src="js/jquery.slimscroll.js"></script>
+        <script src="js/jquery.blockUI.js"></script>
+        <script src="js/waves.js"></script>
+        <script src="js/wow.min.js"></script>
+        <script src="js/jquery.nicescroll.js"></script>
+        <script src="js/jquery.scrollTo.min.js"></script>
+
+        <script src="js/jquery.core.js"></script>
+        <script src="js/jquery.app.js"></script>
+
+
+        <script src="js/jquery.validate.js"></script>
+		<script type="text/javascript">
+			$("#Login_form").validate({
+				rules: {
+					Username: {
+						required: true
+					},
+					Password: {
+						required: true
+					}
+				},
+				submitHandler: function(form) {
+					var Email = $("input#Email").val();
+					var Password = $("input#Password").val();
+					var Remember = $("input#Remember").val();
+
+					$.ajax({
+						url:"loginapi",
+						method:'post',
+						data:{Email: Email,Password: Password,Remember: Remember},
+						success:function(Resp){
+							if(Resp.Success == true){
+                                $('#alert').show()
+    							$('#alert').removeClass('alert-danger').addClass('alert-success').html('Login SuccessFully');
+    							setTimeout(function(){ location.href = 'dashboard' }, 2000);
+							}else{
+                                $('#alert').show()
+    							$('#alert').removeClass('alert-success').addClass('alert-danger').html('Username/Password are Incorrect');
+							}
+						}
+					});
+					return false;
+				}
+			});
+		</script>
+
+	</body>
+</html>

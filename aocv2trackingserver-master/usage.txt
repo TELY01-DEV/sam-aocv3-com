@@ -1,0 +1,9 @@
+4.0K	/home/samserver/.cache
+9.3M	/home/samserver/public
+471M	/home/samserver/.pm2
+29M	/home/samserver/.npm
+12M	/home/samserver/aocv2-tracking-websocket-server
+12K	/home/samserver/.local
+4.0K	/home/samserver/.ssh
+249G	/home/samserver/aocv2trackingserver-master
+250G	/home/samserver

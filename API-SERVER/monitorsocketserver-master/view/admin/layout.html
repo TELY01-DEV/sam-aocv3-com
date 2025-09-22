@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+    <%- include('includes/header.html') -%>
+    <body class="fixed-left">
+
+        <!-- Begin page -->
+        <div id="wrapper">
+
+            <!-- Top Bar Start -->
+            <%- include('includes/topbar.html') -%>
+            <!-- Top Bar End -->
+
+            <!-- ========== Left Sidebar Start ========== -->
+            <%- include('includes/leftSidebar.html') -%>
+            <!-- Left Sidebar End -->
+
+            <!-- ============================================================== -->
+            <!-- Start right Content here -->
+            <!-- ============================================================== -->
+            <% if(page == "dashboard") { %>
+                <%- include('pages/dashboard.html') -%>
+            <% } else if(page == "patients") { %>
+                <%- include('pages/patients.html') -%>
+            <% } else if(page == "devices") { %>
+                <%- include('pages/devices.html') -%>
+            <% } %>
+            <!-- ============================================================== -->
+            <!-- End Right content here -->
+            <!-- ============================================================== -->
+
+            <!-- Right Sidebar -->
+            <%- include('includes/rightSidebar.html') -%>
+            <!-- /Right-bar -->
+
+        </div>
+        <!-- END wrapper -->
+    </body>
+    <script>
+        var resizefunc = [];
+    </script>
+
+    <!-- jQuery  -->
+    <script src="js/jquery.min.js"></script>
+    <script src="js/popper.min.js"></script> <!-- Popper for Bootstrap -->
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/modernizr.min.js"></script>
+
+    <script src="js/moment.min.js"></script>
+    <script src="js/bootstrap-datetimepicker.min.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/js/bootstrap-datetimepicker.min.js"></script> -->
+    
+
+    <script src="js/detect.js"></script>
+    <script src="js/fastclick.js"></script>
+    <script src="js/jquery.slimscroll.js"></script>
+    <script src="js/jquery.blockUI.js"></script>
+    <script src="js/waves.js"></script>
+    <script src="js/wow.min.js"></script>
+    <script src="js/jquery.nicescroll.js"></script>
+    <script src="js/jquery.scrollTo.min.js"></script>
+    <script src="css/select2/select2.js"></script>
+    <script>$('.select2').select2();</script>
+    
+
+    <!-- jQuery Validation  -->
+    <script src="js/jquery.validate.min.js"></script>
+    <script src="js/additional-methods.min.js"></script>
+    <script src="plugins/peity/jquery.peity.min.js"></script>
+
+    <!-- jQuery  -->
+    <script src="plugins/waypoints/lib/jquery.waypoints.min.js"></script>
+    <script src="plugins/counterup/jquery.counterup.min.js"></script>
+    <script src="plugins/raphael/raphael-min.js"></script>
+    <script src="plugins/jquery-knob/jquery.knob.js"></script>
+    <script src="js/jquery.core.js"></script>
+    <script src="js/jquery.app.js"></script>
+
+    <script type="text/javascript">
+        var patientData = "patientData";
+        var deviceData = "deviceData";
+
+        jQuery(document).ready(function ($) {
+            $('.counter').counterUp({
+                delay: 100,
+                time: 1200
+            });
+
+        });
+        
+        function sqlToJsDate(sqlDate){
+            //sqlDate in SQL DATETIME format ("yyyy-mm-dd hh:mm:ss.ms")
+            var sqlDateArr1 = sqlDate.split("-");
+            //format of sqlDateArr1[] = ['yyyy','mm','dd hh:mm:ms']
+            var sYear = sqlDateArr1[0];
+            var sMonth = (Number(sqlDateArr1[1]) - 1).toString();
+            var sqlDateArr2 = sqlDateArr1[2].split(" ");
+            //format of sqlDateArr2[] = ['dd', 'hh:mm:ss.ms']
+            var sDay = sqlDateArr2[0];
+            var sqlDateArr3 = sqlDateArr2[1].split(":");
+            //format of sqlDateArr3[] = ['hh','mm','ss.ms']
+            var sHour = sqlDateArr3[0];
+            var sMinute = sqlDateArr3[1];
+            var sqlDateArr4 = sqlDateArr3[2].split(".");
+            //format of sqlDateArr4[] = ['ss','ms']
+            var sSecond = sqlDateArr4[0];
+            var sMillisecond = sqlDateArr4[1];
+            
+            return new Date(sYear,sMonth,sDay,sHour,sMinute,sSecond,sMillisecond);
+        }
+    </script>
+
+
+    <!-- Required datatable js -->
+    <script src="plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="plugins/datatables/dataTables.bootstrap4.min.js"></script>
+    <!-- Buttons examples -->
+    <script src="plugins/datatables/dataTables.buttons.min.js"></script>
+    <script src="plugins/datatables/buttons.bootstrap4.min.js"></script>
+    <script src="plugins/datatables/jszip.min.js"></script>
+    <script src="plugins/datatables/pdfmake.min.js"></script>
+    <script src="plugins/datatables/vfs_fonts.js"></script>
+    <script src="plugins/datatables/buttons.html5.min.js"></script>
+    <script src="plugins/datatables/buttons.print.min.js"></script>
+    <script src="plugins/datatables/buttons.colVis.min.js"></script>
+    <!-- Responsive examples -->
+    <script src="plugins/datatables/dataTables.responsive.min.js"></script>
+    <script src="plugins/datatables/responsive.bootstrap4.min.js"></script>
+
+    <script type="text/javascript">
+        
+    </script>
+    <!-- App css -->
+    <script src="custom/js/dashboard.js"></script>
+    <script src="custom/js/patients.js"></script>
+    <script src="custom/js/devices.js"></script>
+
+</html>
+
+

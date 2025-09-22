@@ -1,0 +1,31 @@
+const { body } = require('express-validator');
+const db = require("../../../config/db.config");
+const AocUsers = db.aoc_users;
+
+exports.validate = (req) => {
+  switch (req) {
+
+    case 'postUserLogin': {
+      return [
+        body("user_name", "user_name: User Name doesn't exists.").exists(),
+        body("password", "password: Password doesn't exists.").exists(),
+        body("device_type", "device_type: Device type doesn't exists.").exists(),
+        body("device_token", "device_token: Device token doesn't exists.").exists(),
+        body("app_version", "app_version: App Version doesn't exists.").exists(),
+      ]
+    }
+
+    case 'postUserDetail': {
+      return [
+        body("user_id", "user_id: User id doesn't exists.").exists(),
+      ]
+    }
+
+    case 'postUserLogout': {
+      return [
+        body("user_id", "user_id: User id doesn't exists.").exists(),
+      ]
+    }
+  }
+
+}

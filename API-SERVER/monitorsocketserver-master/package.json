@@ -1,0 +1,26 @@
+{
+  "name": "socket",
+  "version": "1.0.0",
+  "description": "",
+  "main": "socket.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon socket.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cookie-parser": "^1.4.5",
+    "ejs": "^3.1.5",
+    "express": "^4.17.1",
+    "express-session": "^1.17.1",
+    "express-socket.io-session": "^1.3.5",
+    "fs": "0.0.1-security",
+    "mongoose": "^5.11.11",
+    "morgan": "^1.10.0",
+    "nodemon": "^2.0.6",
+    "socket.io": "^3.0.3",
+    "socket.io-client": "^4.1.2",
+    "ws": "^7.4.0"
+  }
+}

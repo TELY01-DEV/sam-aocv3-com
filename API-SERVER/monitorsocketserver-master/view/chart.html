@@ -1,0 +1,394 @@
+<html>
+    <head>
+        <style>
+            body{
+                background-color: black;
+            }
+            .alert {
+                padding: 20px;
+                background-color: #f44336;
+                color: white;
+                width: 65%;
+            }
+
+            .closebtn {
+                margin-left: 15px;
+                color: white;
+                font-weight: bold;
+                float: right;
+                font-size: 22px;
+                line-height: 20px;
+                cursor: pointer;
+                transition: 0.3s;
+            }
+
+            .closebtn:hover {
+                color: black;
+            }
+
+            div.smoothie-chart-tooltip {
+                background: #444;
+                padding: 1em;
+                margin-top: 20px;
+                font-family: consolas;
+                color: white;
+                font-size: 10px;
+                pointer-events: none;
+            }
+        </style>
+        <script type="text/javascript" src="chart.js"></script>
+        <script type="text/javascript" src="socket.js"></script>
+        <script type="text/javascript" src="jquery.min.js"></script>
+        <script type="text/javascript" src="notify.min.js"></script>
+        <script>
+            (function() {
+                var ecgI = [], ecgII = [], ecgIII = [], spo2 = [];
+                var ecgIIICount = 0;
+                
+                var ecgI_Interval = setInterval(() => {
+                    if(ecgI.length){
+                        chart1.start();
+                        chart1line1.append(new Date().getTime(), ecgI[0].data);
+                        ecgI.splice(0, 1);
+                    }else{
+                        chart1.stop();
+                        // chart1line1.append(new Date().getTime(), 0);
+                    }
+                }, 7);
+
+                var ecgII_Interval = setInterval(() => {
+                    if(ecgII.length){
+                        chart2.start();
+                        chart2line1.append(new Date().getTime(), ecgII[0].data);
+                        ecgII.splice(0, 1);
+                    }else{
+                        chart2.stop();
+                        // chart2line1.append(new Date().getTime(), 0);
+                    }
+                }, 15);
+
+                var ecgIII_Interval = setInterval(() => { 
+                    if(ecgIII.length){
+                        chart3.start();
+                        chart3line1.append(new Date().getTime(), ecgIII[0].data);
+                        ecgIII.splice(0, 1);
+                    }else{
+                        chart3.stop();
+                        chart3line1.append(new Date().getTime(), 0);
+                    }
+                }, 15);
+
+                var spo2_Interval = setInterval(() => {
+                    if(spo2.length){
+                        chart4.start();
+                        chart4line1.append(new Date().getTime(), spo2[0].data);
+                        spo2.splice(0, 1);
+                    }else{
+                        chart4.stop();
+                        chart4line1.append(new Date().getTime(), 0);
+                    }
+                }, 100);
+
+                console.log('Socket connecting...');
+                setTimeout(() => {
+                    var socket = io.connect('https://ecgsocket.aocv2.com');
+        
+                    socket.on('connection', function (data) {
+                        console.log('Server Connected '+data);
+                        setTimeout(() =>{
+                            console.log('Room Joining...', '<%= SerialNumber %>');
+                            socket.emit("room_join", '<%= SerialNumber %>', function(data) {
+                                console.log('Room Joined ');
+                            });
+                        }, 1000)
+
+                        chart1.start();
+                        chart2.start();
+                        chart3.start();
+                        chart4.start();
+                    });
+                    
+                    socket.on('disconnect', function (data) {
+                        ecgI.splice(0, ecgI.length);
+                        ecgII.splice(0, ecgII.length);
+                        ecgIII.splice(0, ecgIII.length);
+                        spo2.splice(0, spo2.length);
+
+                        chart1.stop();
+                        chart2.stop();
+                        chart3.stop();
+                        chart4.stop();
+
+                        // clearInterval(ecgI_Interval);
+                        // clearInterval(ecgII_Interval);
+                        // clearInterval(ecgIII_Interval);
+                        // clearInterval(spo2_Interval);
+                    });
+    
+                    var text_ECG_I = 'EcgI';
+                    var text_ECG_II = 'EcgII';
+                    var text_ECG_III = 'EcgIII';
+                    var text_ECG_SPO2 = 'Spo2';
+                    var text_VITAL = 'vital';
+                    var text_ALARM = 'alarm';
+                    var alarmStr = '';
+        
+                    socket.on('data', function (rowdata) {
+                        dataStr = rowdata.toString();
+                        dataStr = dataStr.trim('\n');
+                        dataStr = dataStr.replaceAll('}','}abc');
+                        dataStr = dataStr.replaceAll('}abc}abc','}}abc');
+                        dataStr = dataStr.replaceAll('abc]}abc',']}');
+                        dataStr = dataStr.replaceAll('}abc]','}]');
+                        dataStr = dataStr.replaceAll('abc,',',');
+                        var dataArray = dataStr.split('abc');
+                        dataArray = dataArray.filter(function(d){ return d != '' });
+                        if(dataArray.length){
+                            dataArray.forEach(d => {
+                                if(d !== ""){
+                                    d = d.trim('\n');
+                                    try {
+                                        data = JSON.parse(d);
+                                            switch (String(data.Key)) {
+                                                case text_VITAL:
+                                                    try {
+                                                        var ValueArray = (data.Value);
+                                                        var isHRzero = false;
+                                                        // if(ValueArray.length && ValueArray.isArray){
+                                                            ValueArray.forEach(V => {
+                                                                var showValue = ((parseFloat(V.Value) !== 0) && !isNaN(V.Value))?parseFloat(V.Value).toFixed(2):'--';
+                                                                var showUnit = (V.Unit);
+                                                                switch (V.TrendName) {
+                                                                    case 'HR':
+                                                                        if (showValue == '--') {
+                                                                            isHRzero = true;
+                                                                        }
+                                                                        document.getElementById("hr").innerHTML = String(showValue);
+                                                                        document.getElementById("hr_time").innerHTML = String(V.dateTime);
+                                                                        break;
+                                                                    
+                                                                    case "SPO2 Pulse":
+                                                                        if (isHRzero) {
+                                                                            document.getElementById("hr").innerHTML = String(showValue);
+                                                                            document.getElementById("hr_time").innerHTML = String(V.dateTime);
+                                                                        }
+                                                                        break;
+                                                                        
+                                                                    case "ETCO2":
+                                                                        document.getElementById("etco2").innerHTML = String(showValue);
+                                                                        document.getElementById("etco2_time").innerHTML = String(V.dateTime);
+                                                                        break;
+                                
+                                                                    case "SPO2":
+                                                                        document.getElementById("spo2").innerHTML = String(showValue);
+                                                                        document.getElementById("spo2_time").innerHTML = String(V.dateTime);
+                                                                        break;
+                                
+                                                                    case "NIBP Sys":
+                                                                        document.getElementById("nibpsys").innerHTML = String(showValue);
+
+                                                                        var now = new Date(Date.now());
+                                                                        var now_seconds = (+now.getHours()) * 60 * 60 + (+now.getMinutes()) * 60 + (+now.getSeconds()); 
+
+                                                                        var time = V.dateTime;
+                                                                        var a = time.split(':'); 
+                                                                        
+                                                                        var time_seconds = (+a[0]) * 60 * 60 + (+a[1]) * 60 + (+a[2]); 
+                                                                        diff = new Date((time_seconds - now_seconds) * 1000).toISOString().substr(11, 8);
+                                                                        break;
+                                
+                                                                    case "NIBP Dia":
+                                                                        document.getElementById("nibpdia").innerHTML = String(showValue);
+                                                                        break;
+                                
+                                                                    case "NIBP Map":
+                                                                        document.getElementById("nibpmap").innerHTML = String(showValue);
+                                                                        break;
+                                                                
+                                                                    default:
+                                                                        break;
+                                                                }
+                                                            });
+                                                        // }
+                                                    } catch (error) {
+                                                        console.log(error)
+                                                    }
+                                                    break;
+                                                
+                                                case text_ALARM:
+                                                    if(alarmStr !== String(data.Value.data) && String(data.Value.data) !== ''){
+                                                        alarmStr = String(data.Value.data);
+                                                        $('.notifyjs-corner').empty();
+                                                        $.notify(String(data.Value.data)+' -- '+String(data.Value.time), {position: "top right", gap: 2, autoHide: false, arrowSize: 13}, "error");
+                                                    }
+                                                    break;
+                                                
+                                                case text_ECG_I:
+                                                    try {
+                                                        var Value = (data.Value);
+                                                        var ValueArray = Value.split(',');
+                                                        if(ValueArray.length){
+                                                            ValueArray.forEach(V => {
+                                                                ecgI.push({date: new Date().getTime(), data: Number(V)})
+                                                            });
+                                                        }
+                                                    } catch (err) {
+                                                        console.log(text_ECG_I+' Data Parse ERROR: ', err)
+                                                    }
+                                                    break;
+                                                
+                                                case text_ECG_II:
+                                                    try {
+                                                        var Value = (data.Value);
+                                                        var ValueArray = Value.split(',');
+                                                        if(ValueArray.length){
+                                                            ValueArray.forEach(V => {
+                                                                ecgII.push({date: new Date().getTime(), data: Number(V)})
+                                                            })
+                                                        }
+                                                    } catch (err) {
+                                                        console.log(text_ECG_II+' Data Parse ERROR: ', err)
+                                                    }
+                                                    break;
+                        
+                                                case text_ECG_III:
+                                                    try {
+                                                        ecgIIICount++;
+                                                        var Value = (data.Value);
+                                                        var ValueArray = Value.split(',');
+                                                        if(ValueArray.length){
+                                                            ValueArray.forEach(V => {
+                                                                ecgIII.push({date: new Date().getTime(), data: Number(V)})
+                                                            })
+                                                        }
+                                                    } catch (err) {
+                                                        console.log(text_ECG_III+' Data Parse ERROR: ', err)
+                                                    }
+                                                    break;
+                        
+                                                case text_ECG_SPO2:
+                                                    try {
+                                                        var Value = (data.Value);
+                                                        var ValueArray = Value.split(',');
+                                                        if(ValueArray.length){
+                                                            ValueArray.forEach(V => {
+                                                                if(Number(V) > 9) spo2.push({date: new Date().getTime(), data: Number(V)});
+                                                            })
+                                                        }
+                                                    } catch (err) {
+                                                        console.log(text_ECG_SPO2+' Data Parse ERROR: ', err)
+                                                    }
+                                                    break;
+                                            
+                                                default:
+                                                    break;
+                                            }
+                                    } catch (err) {
+                                        console.log('Data Parse ERROR: ', err)
+                                    }
+                                }
+                            });
+                        }
+                    });
+                }, 2000);
+            })();
+        </script>
+        <style>
+            #rectangle{
+                width:300px;
+                height:150px;                
+            }
+        </style>
+    </head>
+    <body>
+        <div class="col-md-12" style="display: inline-block;">
+            <div class="col-md-8" style="display: inline-block;">
+                <p style="color: #00ff00;margin-top: 0px;margin-bottom: 0px;">II</p>
+                <canvas id="mycanvas2" width="650px" height="150px" ></canvas>
+            </div>
+            <div class="col-md-4 col-sm-4" style="display: inline-block; vertical-align: top;">
+                <p style="color: black;margin-top: 0px;margin-bottom: 0px;">000</p>
+                <div id="rectangle" style="background:rgb(61, 136, 45); color: white;">
+                    <p style="margin-top: 0px; background:rgb(35, 85, 26);">HR (b/min)</p>
+                    <h1 style="margin-left: 25%;" id="hr">--</h1>
+                    <h1 style="margin-left: 25%;" id="hr_time">00:00:00</h1>
+                </div>
+            </div>
+            
+        </div>
+
+        <div class="col-md-12 col-sm-12" style="display: inline-block;">
+            <div class="col-md-8 col-sm-8" style="display: inline-block;">
+                <p style="color: #00ff00;margin-top: 0px;margin-bottom: 0px;">I</p>
+                <canvas id="mycanvas1" width="650px" height="150px" ></canvas>
+            </div>
+            <div class="col-md-4" style="display: inline-block; vertical-align: top;">
+                <p style="color: black;margin-top: 0px;margin-bottom: 0px;">000</p>
+                <div id="rectangle" style="background:rgb(128, 136, 139); color: white;">
+                    <p style="margin-top: 0px; background:rgb(87, 95, 100);">NIBP (mmHG)</p>
+                    <div style="margin-top: -8%;"><h1 style="margin-left: 25%; display: inline-block;" id="nibpsys">--</h1><b> / </b><h1 style="display: inline-block;" id="nibpdia">--</h1>   (<h1 style="display: inline-block;"  id="nibpmap">--</h1>)</div>
+                    <h1 style="margin-left: 25%; margin-top: -2%;" id="nibp_time">00:00:00</h1>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-12" style="display: inline-block;">
+            <div class="col-md-8" style="display: inline-block;">
+                <p style="color:#00ff00;margin-top: 0px;margin-bottom: 0px;">III</p>
+                <canvas id="mycanvas3" width="650px" height="150px" ></canvas>
+            </div>
+            <div class="col-md-4" style="display: inline-block; vertical-align: top;">
+                <p style="color: black;margin-top: 0px;margin-bottom: 0px;">000</p>
+                <div id="rectangle" style="background: rgb(59, 72, 190); color: white;">
+                    <p style="margin-top: 0px; background:rgb(31, 51, 139);">SpO2 (%)</p>
+                    <h1 style="margin-left: 25%;" id="spo2">--</h1>
+                    <h1 style="margin-left: 25%;" id="spo2_time">00:00:00</h1>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-12" style="display: inline-block;">
+            <div class="col-md-8" style="display: inline-block;">
+                <p style="color: #287FBE;margin-top: 0px;margin-bottom: 0px;">SpO2</p>
+                <canvas id="mycanvas4" width="650px" height="150px" ></canvas>
+            </div>
+            <div class="col-md-4" style="display: inline-block; vertical-align: top;">
+                <p style="color: black;margin-top: 0px;margin-bottom: 0px;">000</p>
+                <div id="rectangle" style="background: rgb(4, 13, 19); color: white;">
+                    <p style="margin-top: 0px; background:rgb(4, 5, 15);">EtCO2 (mmHG)</p>
+                    <h1 style="margin-left: 25%;" id="etco2">--</h1>
+                    <h1 style="margin-left: 25%;" id="etco2_time">00:00:00</h1>
+                </div>
+            </div>
+        </div>
+    </body>
+    <script>
+        var chart1 = new SmoothieChart({millisPerPixel:8, tooltip:true, maxValue:255, minValue:-80, scrollBackwards:true, grid:{fillStyle:'#000000',strokeStyle:'#000000'},labels:{fillStyle:'#000000'}});
+        chart1.streamTo(document.getElementById("mycanvas1"), 1);
+
+        var chart1line1 = new TimeSeries();
+        
+        chart1.addTimeSeries(chart1line1, {lineWidth:1.5,strokeStyle:'#00ff00'});
+        //////////////////////////////////////////////////////////////////////////////////////
+        var chart2 = new SmoothieChart({millisPerPixel:8, tooltip:true, maxValue:350, minValue:-150, scrollBackwards:true, grid:{fillStyle:'#000000',strokeStyle:'#000000'},labels:{fillStyle:'#000000'}});
+        chart2.streamTo(document.getElementById("mycanvas2"), 10);
+
+        var chart2line1 = new TimeSeries();
+        
+        chart2.addTimeSeries(chart2line1, {lineWidth:1.5,strokeStyle:'#00ff00'});
+        /////////////////////////////////////////////////////////////////////////////////////
+        var chart3 = new SmoothieChart({millisPerPixel:8, tooltip:true, maxValue:350, minValue:-150, scrollBackwards:true, grid:{fillStyle:'#000000',strokeStyle:'#000000'},labels:{fillStyle:'#000000'}});
+        chart3.streamTo(document.getElementById("mycanvas3"), 1);
+
+        var chart3line1 = new TimeSeries();
+
+        chart3.addTimeSeries(chart3line1, {lineWidth:1.5,strokeStyle:'#00ff00'});
+        //////////////////////////////////////////////////////////////////////////////////////
+        var chart4 = new SmoothieChart({millisPerPixel:17, tooltip:true, maxValue:250, minValue:-100, scrollBackwards:true, grid:{fillStyle:'#000000',strokeStyle:'#000000'},labels:{fillStyle:'#000000'}});
+        chart4.streamTo(document.getElementById("mycanvas4"), 2500);
+
+        var chart4line1 = new TimeSeries();
+
+        chart4.addTimeSeries(chart4line1, {lineWidth:1.5,strokeStyle:'#287FBE'});
+    </script>
+</html>
